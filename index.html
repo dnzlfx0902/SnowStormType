@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taller de Papá Noel — Mecanografía Navideña</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game-shell">
+    <!-- Luces navideñas superiores -->
+    <div class="fairy-lights" aria-hidden="true">
+      <span class="fairy-bulb"></span><span class="fairy-bulb"></span><span class="fairy-bulb"></span><span class="fairy-bulb"></span>
+      <span class="fairy-bulb"></span><span class="fairy-bulb"></span><span class="fairy-bulb"></span><span class="fairy-bulb"></span>
+      <span class="fairy-bulb"></span><span class="fairy-bulb"></span><span class="fairy-bulb"></span><span class="fairy-bulb"></span>
+      <span class="fairy-bulb"></span><span class="fairy-bulb"></span><span class="fairy-bulb"></span><span class="fairy-bulb"></span>
+      <span class="fairy-bulb"></span><span class="fairy-bulb"></span><span class="fairy-bulb"></span><span class="fairy-bulb"></span>
+    </div>
+
+    <canvas id="game-canvas"></canvas>
+
+    <!-- HUD superior -->
+    <header class="hud-bar">
+      <div class="hud-group">
+        <div class="hud-pill">
+          <span class="hud-label">Puntos</span>
+          <span class="hud-value gold" id="hud-score">0</span>
+        </div>
+        <div class="hud-pill">
+          <span class="hud-label">Racha</span>
+          <span class="hud-value green" id="hud-combo">x1</span>
+        </div>
+        <div class="hud-pill">
+          <span class="hud-label">PPM</span>
+          <span class="hud-value" id="hud-wpm">0</span>
+        </div>
+        <div class="hud-pill">
+          <span class="hud-label">Precisión</span>
+          <span class="hud-value frost" id="hud-acc">100%</span>
+        </div>
+        <div class="hud-pill">
+          <span class="hud-label">Oleada</span>
+          <span class="hud-value" id="hud-wave">1</span>
+        </div>
+      </div>
+
+      <div class="hud-group">
+        <div class="hud-pill lives-pill" id="hud-lives" aria-label="Vidas del taller">
+          <span class="heart-icon">❤️</span>
+          <span class="heart-icon">❤️</span>
+          <span class="heart-icon">❤️</span>
+          <span class="heart-icon">❤️</span>
+          <span class="heart-icon">❤️</span>
+        </div>
+        <div class="hud-actions">
+          <button class="icon-btn" id="btn-mute" title="Silenciar / Activar sonido">🔊</button>
+          <button class="icon-btn" id="btn-pause" title="Pausar partida (Esc)">⏸ Pausa</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="freeze-banner hidden" id="freeze-banner">
+      ❄️ ¡MAGIA DE ESCARCHA ACTIVA! Regalos ralentizados
+    </div>
+
+    <!-- Indicador inferior de objetivo bloqueado -->
+    <div class="bottom-dock">
+      <div class="typed-buffer-pill">
+        <span class="buffer-tag" id="target-status">Listo</span>
+        <span class="buffer-word" id="target-preview">Teclea para atrapar regalos</span>
+      </div>
+    </div>
+
+    <!-- Contenedor de significado en esquina (Modo Phrasal Verbs) -->
+    <aside class="meaning-corner hidden" id="meaning-corner" aria-live="polite">
+      <div class="meaning-header">
+        <span class="meaning-kicker">📘 Significado</span>
+        <span class="meaning-state" id="meaning-state">Próximo</span>
+      </div>
+      <div class="meaning-term" id="meaning-term">wrap up</div>
+      <div class="meaning-def" id="meaning-def">Envolver (un regalo) / Terminar algo</div>
+      <div class="meaning-ex" id="meaning-ex">Let's wrap up the presents tonight.</div>
+    </aside>
+
+    <!-- Pantalla de Inicio -->
+    <section class="overlay" id="screen-start">
+      <div class="modal-card">
+        <span class="badge-ribbon">🎄 Edición Especial de Invierno</span>
+        <h1 class="modal-title">Taller de Papá Noel</h1>
+        <p class="modal-subtitle">
+          Los regalos caen del cielo estrellado rumbo a las chimeneas. Escribe cada palabra antes de que toquen el suelo nevado para salvar la Navidad.
+        </p>
+
+        <div class="vocab-grid" role="radiogroup" aria-label="Modo de vocabulario">
+          <button class="vocab-btn active" data-vocab="es">
+            <span class="vocab-icon">🎄</span>
+            <span>
+              <strong class="vocab-name">Navidad (ES)</strong>
+              <span class="vocab-desc">Palabras y frases navideñas</span>
+            </span>
+          </button>
+          <button class="vocab-btn" data-vocab="phrasal">
+            <span class="vocab-icon">🇬🇧</span>
+            <span>
+              <strong class="vocab-name">Phrasal Verbs (EN)</strong>
+              <span class="vocab-desc">Con significado en esquina</span>
+            </span>
+          </button>
+        </div>
+
+        <div class="difficulty-grid" role="radiogroup" aria-label="Dificultad">
+          <button class="diff-btn" data-diff="easy">
+            <span class="diff-icon">🧝</span>
+            <span class="diff-name">Duende</span>
+            <span class="diff-desc">Ritmo suave y palabras cortas</span>
+          </button>
+          <button class="diff-btn active" data-diff="normal">
+            <span class="diff-icon">🦌</span>
+            <span class="diff-name">Reno Veloz</span>
+            <span class="diff-desc">Desafío equilibrado</span>
+          </button>
+          <button class="diff-btn" data-diff="hard">
+            <span class="diff-icon">🎅</span>
+            <span class="diff-name">Papá Noel</span>
+            <span class="diff-desc">Tormenta de regalos y frases</span>
+          </button>
+        </div>
+
+        <div class="options-row">
+          <label class="toggle-label">
+            <input type="checkbox" id="opt-flex-accents" checked />
+            <span>Acentos flexibles (a = á)</span>
+          </label>
+          <label class="toggle-label">
+            <input type="checkbox" id="opt-music" checked />
+            <span>Villancico ambiental</span>
+          </label>
+        </div>
+
+        <div class="powerup-legend">
+          <div class="legend-item">
+            <strong>❄️ Escarcha</strong>
+            Congela la caída 4.5s
+          </div>
+          <div class="legend-item">
+            <strong>🌟 Destello</strong>
+            Despeja toda la pantalla
+          </div>
+          <div class="legend-item">
+            <strong>☕ Chocolate</strong>
+            Recupera +1 vida
+          </div>
+        </div>
+
+        <button class="primary-btn" id="btn-start">🎁 ¡Empezar a Empaquetar!</button>
+        <p class="highscore-note" id="start-highscore">Récord personal: 0 pts</p>
+        <p class="hint-kbd">Pulsa <kbd>Enter</kbd> para empezar · <kbd>Tab</kbd> cambia objetivo · <kbd>Esc</kbd> pausa</p>
+      </div>
+    </section>
+
+    <!-- Pantalla de Pausa -->
+    <section class="overlay hidden" id="screen-pause">
+      <div class="modal-card">
+        <span class="badge-ribbon">❄️ Pausa en el Polo Norte</span>
+        <h2 class="modal-title">Descanso con Chocolate</h2>
+        <p class="modal-subtitle">Los duendes sostienen el trineo mientras tomas un respiro.</p>
+        <button class="primary-btn" id="btn-resume">▶ Continuar Partida</button>
+        <button class="secondary-btn" id="btn-restart-pause">🔄 Volver al Menú</button>
+      </div>
+    </section>
+
+    <!-- Pantalla de Fin de Partida -->
+    <section class="overlay hidden" id="screen-gameover">
+      <div class="modal-card">
+        <span class="badge-ribbon" id="gameover-badge">🎄 Turno Completado</span>
+        <h2 class="modal-title" id="gameover-title">¡Fin de la Nochebuena!</h2>
+        <p class="modal-subtitle" id="gameover-msg">Buen trabajo en el taller navideño.</p>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-k">Puntuación Final</div>
+            <div class="stat-v" id="final-score">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-k">Velocidad</div>
+            <div class="stat-v" id="final-wpm">0 PPM</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-k">Precisión</div>
+            <div class="stat-v" id="final-acc">100%</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-k">Mejor Racha</div>
+            <div class="stat-v" id="final-streak">0</div>
+          </div>
+        </div>
+
+        <button class="primary-btn" id="btn-play-again">🎅 Jugar Otra Vez</button>
+        <button class="secondary-btn" id="btn-menu">🏠 Cambiar Dificultad</button>
+        <p class="highscore-note" id="final-highscore">Récord personal: 0 pts</p>
+      </div>
+    </section>
+  </div>
+
+  <script defer src="words.js"></script>
+  <script defer src="audio.js"></script>
+  <script defer src="game.js"></script>
+</body>
+</html>

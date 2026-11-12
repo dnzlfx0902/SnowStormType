@@ -1,0 +1,633 @@
+:root {
+  --bg-night: #071320;
+  --bg-pine: #0d2235;
+  --card-bg: rgba(11, 27, 43, 0.84);
+  --card-border: rgba(255, 224, 150, 0.28);
+  --gold: #ffd166;
+  --red: #e63946;
+  --red-bright: #ff5964;
+  --green: #2ec4b6;
+  --pine-green: #2a9d8f;
+  --frost: #a8dadc;
+  --snow: #f8fafc;
+  --muted: #9db4c8;
+  --shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 20%, #132d46 0%, #071320 75%);
+  color: var(--snow);
+  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  user-select: none;
+}
+
+#game-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Guirnalda superior de luces navideñas */
+.fairy-lights {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 16px;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  pointer-events: none;
+  z-index: 15;
+  padding: 0 12px;
+}
+
+.fairy-bulb {
+  width: 10px;
+  height: 13px;
+  border-radius: 50% 50% 60% 60%;
+  margin-top: 2px;
+  animation: twinkle 1.8s infinite ease-in-out alternate;
+}
+
+.fairy-bulb:nth-child(4n+1) { background: #ff5964; box-shadow: 0 0 12px #ff5964; animation-delay: 0s; }
+.fairy-bulb:nth-child(4n+2) { background: #ffd166; box-shadow: 0 0 12px #ffd166; animation-delay: 0.45s; }
+.fairy-bulb:nth-child(4n+3) { background: #2ec4b6; box-shadow: 0 0 12px #2ec4b6; animation-delay: 0.9s; }
+.fairy-bulb:nth-child(4n+4) { background: #74c0fc; box-shadow: 0 0 12px #74c0fc; animation-delay: 1.35s; }
+
+@keyframes twinkle {
+  0% { opacity: 0.45; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1.08); }
+}
+
+/* HUD Superior */
+.hud-bar {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 12;
+  pointer-events: none;
+}
+
+.hud-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hud-pill {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(8px);
+  border-radius: 14px;
+  padding: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  min-width: 86px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.hud-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.hud-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--snow);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.hud-value.gold { color: var(--gold); }
+.hud-value.green { color: var(--green); }
+.hud-value.frost { color: var(--frost); }
+
+.lives-pill {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+}
+
+.heart-icon {
+  font-size: 19px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.heart-icon.lost {
+  opacity: 0.22;
+  filter: grayscale(1);
+  transform: scale(0.85);
+}
+
+.hud-actions {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--snow);
+  border-radius: 12px;
+  padding: 9px 13px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.icon-btn:hover {
+  border-color: var(--gold);
+  background: rgba(20, 44, 68, 0.95);
+  transform: translateY(-1px);
+}
+
+/* Barra de estado inferior (Objetivo activo + congelación) */
+.bottom-dock {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  z-index: 12;
+  pointer-events: none;
+}
+
+.typed-buffer-pill {
+  background: rgba(8, 20, 33, 0.88);
+  border: 1.5px solid rgba(255, 209, 102, 0.45);
+  border-radius: 999px;
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5);
+  font-family: "Cascadia Code", "Consolas", "Fira Code", monospace;
+  font-size: 16px;
+}
+
+.buffer-tag {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+
+.buffer-word {
+  color: var(--snow);
+  min-width: 110px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.freeze-banner {
+  position: absolute;
+  top: 88px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(168, 218, 220, 0.18);
+  border: 1px solid rgba(168, 218, 220, 0.65);
+  color: #e0fbfc;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  z-index: 12;
+  pointer-events: none;
+  backdrop-filter: blur(6px);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Overlays Modales */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 11, 20, 0.72);
+  backdrop-filter: blur(7px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  padding: 20px;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 560px;
+  background: linear-gradient(165deg, rgba(16, 38, 59, 0.96), rgba(9, 22, 36, 0.97));
+  border: 1.5px solid rgba(255, 209, 102, 0.36);
+  border-radius: 24px;
+  padding: 30px 32px;
+  box-shadow: var(--shadow);
+  text-align: center;
+  position: relative;
+}
+
+.badge-ribbon {
+  display: inline-block;
+  background: rgba(230, 57, 70, 0.22);
+  border: 1px solid rgba(255, 89, 100, 0.5);
+  color: #ffb3ba;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+
+.modal-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 34px;
+  line-height: 1.15;
+  color: var(--gold);
+  margin-bottom: 10px;
+  text-shadow: 0 2px 12px rgba(255, 209, 102, 0.25);
+}
+
+.modal-subtitle {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+
+.difficulty-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.diff-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 12px 10px;
+  color: var(--snow);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.diff-btn:hover {
+  border-color: rgba(255, 209, 102, 0.55);
+  background: rgba(255, 209, 102, 0.08);
+}
+
+.diff-btn.active {
+  border-color: var(--gold);
+  background: rgba(255, 209, 102, 0.16);
+  box-shadow: 0 0 0 2px rgba(255, 209, 102, 0.2);
+}
+
+.diff-icon {
+  font-size: 22px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.diff-name {
+  font-weight: 800;
+  font-size: 14px;
+  display: block;
+}
+
+.diff-desc {
+  font-size: 11px;
+  color: var(--muted);
+  display: block;
+  margin-top: 2px;
+}
+
+.options-row {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #d6e4f0;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.toggle-label input {
+  accent-color: var(--gold);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.powerup-legend {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 22px;
+  text-align: left;
+}
+
+.legend-item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 9px 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.legend-item strong {
+  display: block;
+  color: var(--snow);
+  font-size: 12.5px;
+  margin-bottom: 2px;
+}
+
+.primary-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #e63946, #c1121f);
+  border: 1px solid rgba(255, 209, 102, 0.5);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  padding: 14px 22px;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(230, 57, 70, 0.35);
+  transition: transform 0.12s ease, filter 0.15s ease;
+}
+
+.primary-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.secondary-btn {
+  width: 100%;
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--snow);
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 20px;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat-box {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.stat-box .stat-k {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.stat-box .stat-v {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--gold);
+  margin-top: 2px;
+}
+
+.highscore-note {
+  font-size: 13px;
+  color: var(--frost);
+  margin-top: 12px;
+  font-weight: 600;
+}
+
+.hint-kbd {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 12px;
+}
+
+kbd {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-family: Consolas, monospace;
+  color: var(--snow);
+}
+
+@media (max-width: 640px) {
+  .difficulty-grid, .powerup-legend {
+    grid-template-columns: 1fr;
+  }
+  .hud-pill {
+    min-width: 66px;
+    padding: 6px 10px;
+  }
+  .hud-value {
+    font-size: 16px;
+  }
+}
+
+/* Selector de modo (Navidad ES vs Phrasal Verbs EN) */
+.vocab-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.vocab-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 10px 12px;
+  color: var(--snow);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.vocab-btn:hover {
+  border-color: rgba(46, 196, 182, 0.65);
+  background: rgba(46, 196, 182, 0.08);
+}
+
+.vocab-btn.active {
+  border-color: var(--green);
+  background: rgba(46, 196, 182, 0.16);
+  box-shadow: 0 0 0 2px rgba(46, 196, 182, 0.22);
+}
+
+.vocab-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.vocab-name {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.vocab-desc {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Contenedor de significado en esquina inferior derecha */
+.meaning-corner {
+  position: absolute;
+  bottom: 16px;
+  right: 18px;
+  width: 300px;
+  max-width: calc(100vw - 36px);
+  background: rgba(9, 24, 39, 0.9);
+  border: 1.5px solid rgba(46, 196, 182, 0.5);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 12px 15px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+  z-index: 13;
+  pointer-events: none;
+}
+
+.meaning-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.meaning-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--frost);
+}
+
+.meaning-state {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 209, 102, 0.16);
+  color: var(--gold);
+  border: 1px solid rgba(255, 209, 102, 0.35);
+}
+
+.meaning-state.locked {
+  background: rgba(46, 196, 182, 0.22);
+  color: #80ffea;
+  border-color: rgba(46, 196, 182, 0.55);
+}
+
+.meaning-term {
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.meaning-def {
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: var(--snow);
+  font-weight: 600;
+}
+
+.meaning-ex {
+  margin-top: 6px;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--muted);
+  font-style: italic;
+}
+
+@media (max-width: 900px) {
+  .bottom-dock {
+    left: 18px;
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .vocab-grid {
+    grid-template-columns: 1fr;
+  }
+  .meaning-corner {
+    width: 240px;
+    bottom: 62px;
+    right: 12px;
+  }
+}
